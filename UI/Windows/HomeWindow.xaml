@@ -1,0 +1,313 @@
+<Window x:Class="MedVisionAI.UI.Windows.HomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MedVision AI"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowState="Maximized"
+        MinWidth="1100" MinHeight="700">
+
+    <Border Background="{StaticResource BackgroundBrush}" CornerRadius="10"
+            MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="62"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="34"/>
+            </Grid.RowDefinitions>
+
+            <!-- TOP BAR -->
+            <Border Grid.Row="0" Style="{StaticResource TopBar}">
+                <Grid Margin="12,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="36" Height="36" CornerRadius="10"
+                                Background="{StaticResource PrimaryLightBrush}" Margin="0,0,12,0">
+                            <TextBlock Text="🧬" FontSize="18"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="MedVision AI" FontSize="15" FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Hệ thống phân tích hình ảnh y tế" FontSize="11"
+                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Border Grid.Column="2" Style="{StaticResource VersionPill}"
+                            VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="v2.0" FontSize="11" FontWeight="Bold"
+                                   Foreground="{StaticResource PrimaryBrush}"/>
+                    </Border>
+                    <TextBlock x:Name="ClockLabel" Grid.Column="3"
+                               FontFamily="Consolas" FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" Margin="0,0,16,0"
+                               MinWidth="200" TextAlignment="Right"/>
+                    <StackPanel Grid.Column="4" Orientation="Horizontal"
+                                VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Button Content="─" Style="{StaticResource WinCtrlButton}"
+                                Click="BtnMinimize_Click"/>
+                        <Button x:Name="BtnMaximize" Content="□"
+                                Style="{StaticResource WinCtrlButton}"
+                                Click="BtnMaximize_Click" Margin="2,0"/>
+                        <Button Content="✕" Style="{StaticResource WinCloseButton}"
+                                Click="BtnClose_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- MAIN CONTENT -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Background="{StaticResource BackgroundBrush}">
+                <StackPanel Margin="40,32,40,32">
+
+                    <!-- HERO -->
+                    <Border CornerRadius="20" Height="126" Margin="0,0,0,32">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#7132F5" Offset="0"/>
+                                <GradientStop Color="#A855F7" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect Color="#7132F5" BlurRadius="28"
+                                             ShadowDepth="8" Opacity="0.35"/>
+                        </Border.Effect>
+                        <Grid Margin="36,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Chào mừng đến MedVision AI"
+                                           FontSize="22" FontWeight="Black" Foreground="White"/>
+                                <TextBlock Text="Nền tảng AI phân tích hình ảnh y tế  ·  Hỗ trợ chẩn đoán lâm sàng"
+                                           FontSize="13" Foreground="#E0D0FF" Margin="0,6,0,0"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="🧬"
+                                       FontSize="52" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- MODULE LABEL -->
+                    <TextBlock Text="MODULES PHÂN TÍCH" Style="{StaticResource LabelSection}"
+                               Margin="0,0,0,14"/>
+
+                    <!-- MODULE CARDS -->
+                    <UniformGrid Columns="2" Rows="2">
+                        <!-- NST -->
+                        <Border x:Name="CardNST" Margin="0,0,8,8" Style="{StaticResource KrakenCard}"
+                                Cursor="Hand" Height="186"
+                                MouseEnter="Card_MouseEnter" MouseLeave="Card_MouseLeave"
+                                MouseLeftButtonUp="CardNST_Click">
+                            <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                            <Grid Margin="22,20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Border Width="46" Height="46" CornerRadius="12"
+                                        Background="#F3EEFF" HorizontalAlignment="Left">
+                                    <TextBlock Text="🧬" FontSize="20"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Grid.Row="1" Text="Phân tích nhiễm sắc thể"
+                                           FontSize="15" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="2"
+                                           Text="Phân đoạn, đếm NST · Phân nhóm Denver A-G · Phát hiện lệch bội và hội chứng di truyền"
+                                           FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <Border Grid.Row="3" Background="#DCFCE7" CornerRadius="20"
+                                        Padding="10,3" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <TextBlock Text="● Hoạt động" FontSize="11"
+                                               FontWeight="Bold" Foreground="#15803D"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Blood Cancer -->
+                        <Border x:Name="CardBlood" Margin="8,0,0,8" Style="{StaticResource KrakenCard}"
+                                Cursor="Hand" Height="186"
+                                MouseEnter="Card_MouseEnter" MouseLeave="Card_MouseLeave"
+                                MouseLeftButtonUp="CardBlood_Click">
+                            <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                            <Grid Margin="22,20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Border Width="46" Height="46" CornerRadius="12"
+                                        Background="#FFF0F0" HorizontalAlignment="Left">
+                                    <TextBlock Text="🩸" FontSize="20"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Grid.Row="1" Text="Phát hiện ung thư tế bào máu"
+                                           FontSize="15" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="2"
+                                           Text="Phân loại ALL · Benign / Early / Pre / Pro · Hỗ trợ chẩn đoán sớm"
+                                           FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <Border Grid.Row="3" Background="#DCFCE7" CornerRadius="20"
+                                        Padding="10,3" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <TextBlock Text="● Hoạt động" FontSize="11"
+                                               FontWeight="Bold" Foreground="#15803D"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Malaria -->
+                        <Border x:Name="CardMalaria" Margin="0,8,8,0" Style="{StaticResource KrakenCard}"
+                                Cursor="Hand" Height="186"
+                                MouseEnter="Card_MouseEnter" MouseLeave="Card_MouseLeave"
+                                MouseLeftButtonUp="CardMalaria_Click">
+                            <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                            <Grid Margin="22,20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Border Width="46" Height="46" CornerRadius="12"
+                                        Background="#F0FDF4" HorizontalAlignment="Left">
+                                    <TextBlock Text="🦠" FontSize="20"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Grid.Row="1" Text="Phát hiện ký sinh trùng sốt rét"
+                                           FontSize="15" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="2"
+                                           Text="Phát hiện Plasmodium trong hồng cầu · Tiêu bản máu nhuộm Giemsa"
+                                           FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <Border Grid.Row="3" Background="#DCFCE7" CornerRadius="20"
+                                        Padding="10,3" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <TextBlock Text="● Hoạt động" FontSize="11"
+                                               FontWeight="Bold" Foreground="#15803D"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Coming Soon -->
+                        <Border Margin="8,8,0,0" Height="186" Background="#FAFAFA" CornerRadius="16"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <Grid Margin="22,20">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Border Width="46" Height="46" CornerRadius="12"
+                                        Background="#EFF6FF" HorizontalAlignment="Left">
+                                    <TextBlock Text="🫁" FontSize="20"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Grid.Row="1" Text="Phát hiện tổn thương phổi"
+                                           FontSize="15" FontWeight="Bold"
+                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="2"
+                                           Text="Phân tích X-quang ngực · Viêm phổi · Tràn dịch · U phổi"
+                                           FontSize="12" Foreground="{StaticResource TextMutedBrush}"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <Border Grid.Row="3" Background="#F0F0F8" CornerRadius="20"
+                                        Padding="10,3" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                    <TextBlock Text="○ Sắp ra mắt" FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- STATS + HISTORY -->
+                    <Grid Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Stats -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="PHIÊN LÀM VIỆC" Style="{StaticResource LabelSection}"
+                                       Margin="0,0,0,12"/>
+                            <UniformGrid Columns="3">
+                                <Border Style="{StaticResource KrakenCard}" Margin="0,0,6,0" Padding="18,16">
+                                    <StackPanel>
+                                        <TextBlock x:Name="StatTotal" Text="0"
+                                                   FontSize="32" FontWeight="Black"
+                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                        <TextBlock Text="Ảnh đã phân tích" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource KrakenCard}" Margin="3,0,3,0" Padding="18,16">
+                                    <StackPanel>
+                                        <TextBlock x:Name="StatNormal" Text="0"
+                                                   FontSize="32" FontWeight="Black"
+                                                   Foreground="{StaticResource SuccessBrush}"/>
+                                        <TextBlock Text="Kết quả bình thường" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource KrakenCard}" Margin="6,0,0,0" Padding="18,16">
+                                    <StackPanel>
+                                        <TextBlock x:Name="StatWarning" Text="0"
+                                                   FontSize="32" FontWeight="Black"
+                                                   Foreground="{StaticResource WarningBrush}"/>
+                                        <TextBlock Text="Cần theo dõi" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                        </StackPanel>
+
+                        <!-- History -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="LỊCH SỬ GẦN ĐÂY" Style="{StaticResource LabelSection}"
+                                       Margin="0,0,0,12"/>
+                            <Border Style="{StaticResource KrakenCard}" MinHeight="120" Padding="16,12">
+                                <StackPanel x:Name="HistoryPanel">
+                                    <TextBlock x:Name="HistoryEmpty"
+                                               Text="Chưa có lịch sử trong phiên này."
+                                               FontSize="13" Foreground="{StaticResource TextMutedBrush}"
+                                               HorizontalAlignment="Center" Margin="0,16"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- FOOTER -->
+            <Border Grid.Row="2" Style="{StaticResource BottomBar}">
+                <Grid>
+                    <TextBlock Text="© 2025 MedVision AI  ·  Hỗ trợ nghiên cứu và giáo dục"
+                               FontSize="11" Foreground="{StaticResource TextMutedBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="Kết quả AI không thay thế chẩn đoán lâm sàng của bác sĩ chuyên khoa"
+                               FontSize="11" Foreground="{StaticResource TextMutedBrush}"
+                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
