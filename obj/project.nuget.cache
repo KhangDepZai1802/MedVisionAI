@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "6LaEsyMDxeA=",
+  "dgSpecHash": "qgisqgaI0TY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\khang\\OneDrive\\Documents\\MedVisionAI_WPF\\MedVisionAI\\MedVisionAI.csproj",
+  "projectFilePath": "C:\\Users\\khang\\OneDrive\\Documents\\MedvisionAI_Project\\MedVisionAI\\MedVisionAI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.ml.onnxruntime\\1.17.3\\microsoft.ml.onnxruntime.1.17.3.nupkg.sha512",
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.ml.onnxruntime.managed\\1.17.3\\microsoft.ml.onnxruntime.managed.1.17.3.nupkg.sha512",

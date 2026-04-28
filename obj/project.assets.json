@@ -641,11 +641,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Documents\\MedVisionAI_WPF\\MedVisionAI\\MedVisionAI.csproj",
+      "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Documents\\MedvisionAI_Project\\MedVisionAI\\MedVisionAI.csproj",
       "projectName": "MedVisionAI",
-      "projectPath": "C:\\Users\\khang\\OneDrive\\Documents\\MedVisionAI_WPF\\MedVisionAI\\MedVisionAI.csproj",
+      "projectPath": "C:\\Users\\khang\\OneDrive\\Documents\\MedvisionAI_Project\\MedVisionAI\\MedVisionAI.csproj",
       "packagesPath": "C:\\Users\\khang\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\khang\\OneDrive\\Documents\\MedVisionAI_WPF\\MedVisionAI\\obj\\",
+      "outputPath": "C:\\Users\\khang\\OneDrive\\Documents\\MedvisionAI_Project\\MedVisionAI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\khang\\AppData\\Roaming\\NuGet\\NuGet.Config"

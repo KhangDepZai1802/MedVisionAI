@@ -116,7 +116,7 @@ namespace MedVisionAI.UI.Controls {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/MedVisionAI;component/ui/controls/modulecard.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/MedVisionAI;V1.0.0.0;component/ui/controls/modulecard.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\UI\Controls\ModuleCard.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
