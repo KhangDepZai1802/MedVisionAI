@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using UserControl = System.Windows.Controls.UserControl;
+using Color   = System.Windows.Media.Color;
+using Cursors = System.Windows.Input.Cursors;
 
 namespace MedVisionAI.UI.Controls
 {

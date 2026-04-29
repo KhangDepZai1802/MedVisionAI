@@ -2,6 +2,8 @@ using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 using MedVisionAI.Models;
+using MessageBox     = System.Windows.MessageBox;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace MedVisionAI.UI.Windows
 {

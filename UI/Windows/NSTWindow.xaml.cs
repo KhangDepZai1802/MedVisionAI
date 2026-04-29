@@ -9,6 +9,10 @@ using Microsoft.Win32;
 using MedVisionAI.Models;
 using MedVisionAI.Services;
 using DragEventArgs = System.Windows.DragEventArgs;
+using MessageBox     = System.Windows.MessageBox;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+using DataFormats    = System.Windows.DataFormats;
 
 namespace MedVisionAI.UI.Windows
 {

@@ -1,4 +1,5 @@
 using OpenCvSharp;
+using Point = OpenCvSharp.Point;
 
 namespace MedVisionAI.Services
 {

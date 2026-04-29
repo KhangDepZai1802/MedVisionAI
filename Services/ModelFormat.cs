@@ -1,5 +1,6 @@
-namespace MedVisionAI.Services
-{
+namespace MedVisionAI.Services;
+using System.IO;
+
     /// <summary>
     /// Định dạng file model AI được hỗ trợ.
     /// </summary>
@@ -34,4 +35,4 @@ namespace MedVisionAI.Services
             };
         }
     }
-}
+
