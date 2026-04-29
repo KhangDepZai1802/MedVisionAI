@@ -4,6 +4,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using MedVisionAI.Models;
+using Color          = System.Windows.Media.Color;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace MedVisionAI.UI.Windows
 {

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -19,6 +18,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.3" />
     <PackageReference Include="OpenCvSharp4.Windows" Version="4.9.0.20240103" />
+  </ItemGroup>
+
+  <!-- Thêm đoạn này -->
+  <ItemGroup>
+    <Resource Include="Themes\KrakenTheme.xaml"/>
+    <Resource Include="Themes\Animations.xaml"/>
   </ItemGroup>
 
 </Project>
