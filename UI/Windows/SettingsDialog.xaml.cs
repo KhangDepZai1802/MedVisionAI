@@ -1,9 +1,8 @@
 using System.IO;
 using System.Windows;
-using Microsoft.Win32;
 using MedVisionAI.Models;
-using MessageBox     = System.Windows.MessageBox;
-using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+
+using WinOpenFile = Microsoft.Win32.OpenFileDialog;
 
 namespace MedVisionAI.UI.Windows
 {
@@ -21,11 +20,8 @@ namespace MedVisionAI.UI.Windows
         {
             InitializeComponent();
             _config = current.Clone();
-
-            // Populate fields
             NormalCount.Text = _config.NormalChromosomeCount.ToString();
             Tolerance.Text   = _config.Tolerance.ToString();
-
             RefreshPathLabels();
         }
 
@@ -77,7 +73,7 @@ namespace MedVisionAI.UI.Windows
 
         private static string? Browse(string title)
         {
-            var dlg = new OpenFileDialog { Title = title, Filter = ModelFilter };
+            var dlg = new WinOpenFile { Title = title, Filter = ModelFilter };
             return dlg.ShowDialog() == true ? dlg.FileName : null;
         }
 
@@ -85,14 +81,18 @@ namespace MedVisionAI.UI.Windows
         {
             if (!int.TryParse(NormalCount.Text, out var nc) || nc <= 0)
             {
-                MessageBox.Show("Số NST chuẩn phải là số nguyên dương.", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(
+                    "Số NST chuẩn phải là số nguyên dương.", "Lỗi",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
                 return;
             }
             if (!int.TryParse(Tolerance.Text, out var tol) || tol < 0)
             {
-                MessageBox.Show("Sai số cho phép phải là số nguyên không âm.", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show(
+                    "Sai số cho phép phải là số nguyên không âm.", "Lỗi",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
                 return;
             }
             _config.NormalChromosomeCount = nc;

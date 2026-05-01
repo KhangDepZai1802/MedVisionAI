@@ -5,8 +5,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/KrakenTheme.xaml"/>
-                <ResourceDictionary Source="Themes/Animations.xaml"/>
+                <ResourceDictionary Source="UI/Controls/KrakenTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

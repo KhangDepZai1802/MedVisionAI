@@ -7,10 +7,12 @@
 #   - Keras (.h5): dùng tensorflow.keras.models.load_model
 
 import sys, json, traceback
-
+sys.stdin.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 def main():
     try:
-        req   = json.loads(sys.stdin.readline())
+        req = json.loads(sys.stdin.read())
         model_path = req["model"]
         image_path = req["image"]
         ext        = model_path.lower().rsplit(".", 1)[-1]

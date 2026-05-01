@@ -1,6 +1,4 @@
 using System.Windows;
-using Application = System.Windows.Application;
-using MessageBox = System.Windows.MessageBox;
 
 namespace MedVisionAI
 {
@@ -9,11 +7,13 @@ namespace MedVisionAI
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            // Global exception handler
             DispatcherUnhandledException += (s, ex) =>
             {
-                MessageBox.Show($"Lỗi không mong đợi: {ex.Exception.Message}",
-                    "MedVision AI", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(
+                    $"Lỗi không mong đợi:\n{ex.Exception.Message}",
+                    "MedVision AI",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
                 ex.Handled = true;
             };
         }
