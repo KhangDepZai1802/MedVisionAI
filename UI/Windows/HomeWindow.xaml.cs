@@ -7,7 +7,6 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using MedVisionAI.Models;
 
-// Alias rõ ràng tránh xung đột System.Windows.Forms vs System.Windows.Input
 using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 using WpfMouseBtnArgs  = System.Windows.Input.MouseButtonEventArgs;
 using WpfMouseBtn      = System.Windows.Input.MouseButton;
@@ -61,36 +60,40 @@ namespace MedVisionAI.UI.Windows
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             _clock.Stop();
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
-        // ── Card hover animation ──────────────────────────────────────────────
+        // ── Card hover animation — chỉ đổi viền, KHÔNG scale ─────────────────
 
         private void Card_MouseEnter(object sender, WpfMouseEventArgs e)
         {
             if (sender is not Border card) return;
-            if (card.RenderTransform is ScaleTransform st)
-            {
-                var anim = new DoubleAnimation(1.0, 1.025,
-                    new Duration(TimeSpan.FromMilliseconds(150)));
-                st.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
-                st.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
-            }
-            card.BorderBrush     = new SolidColorBrush(WpfColor.FromRgb(0x71, 0x32, 0xF5));
+
+            // Animate border color: xám → tím, duration 200ms
+            var anim = new ColorAnimation(
+                WpfColor.FromRgb(0xEB, 0xEB, 0xF0),  // từ màu xám
+                WpfColor.FromRgb(0x71, 0x32, 0xF5),  // đến màu tím
+                new Duration(TimeSpan.FromMilliseconds(200)));
+
+            var brush = new SolidColorBrush(WpfColor.FromRgb(0xEB, 0xEB, 0xF0));
+            card.BorderBrush = brush;
+            brush.BeginAnimation(SolidColorBrush.ColorProperty, anim);
             card.BorderThickness = new Thickness(2);
         }
 
         private void Card_MouseLeave(object sender, WpfMouseEventArgs e)
         {
             if (sender is not Border card) return;
-            if (card.RenderTransform is ScaleTransform st)
-            {
-                var anim = new DoubleAnimation(1.025, 1.0,
-                    new Duration(TimeSpan.FromMilliseconds(150)));
-                st.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
-                st.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
-            }
-            card.BorderBrush     = new SolidColorBrush(WpfColor.FromRgb(0xEB, 0xEB, 0xF0));
+
+            // Animate border color: tím → xám, duration 200ms
+            var anim = new ColorAnimation(
+                WpfColor.FromRgb(0x71, 0x32, 0xF5),  // từ tím
+                WpfColor.FromRgb(0xEB, 0xEB, 0xF0),  // về xám
+                new Duration(TimeSpan.FromMilliseconds(200)));
+
+            var brush = new SolidColorBrush(WpfColor.FromRgb(0x71, 0x32, 0xF5));
+            card.BorderBrush = brush;
+            brush.BeginAnimation(SolidColorBrush.ColorProperty, anim);
             card.BorderThickness = new Thickness(1);
         }
 
@@ -148,7 +151,6 @@ namespace MedVisionAI.UI.Windows
 
             HistoryEmpty.Visibility = Visibility.Collapsed;
 
-            // Build row
             var row = new Grid { Height = 44 };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -179,12 +181,11 @@ namespace MedVisionAI.UI.Windows
                 return tb;
             }
 
-            row.Children.Add(Tb(0, "●",       dotColor,    9));
-            row.Children.Add(Tb(1, filename,   "#101114",  12, false, true));
-            row.Children.Add(Tb(2, $"{count} NST", "#9090A8", 11));
-            row.Children.Add(Tb(3, result,     resultColor, 11, true));
+            row.Children.Add(Tb(0, "●",           dotColor,    9));
+            row.Children.Add(Tb(1, filename,       "#101114",  12, false, true));
+            row.Children.Add(Tb(2, $"{count} NST", "#9090A8",  11));
+            row.Children.Add(Tb(3, result,         resultColor, 11, true));
 
-            // Separator bottom border
             var sep = new Border
             {
                 BorderBrush     = new SolidColorBrush(WpfColor.FromRgb(0xF0, 0xF0, 0xF8)),

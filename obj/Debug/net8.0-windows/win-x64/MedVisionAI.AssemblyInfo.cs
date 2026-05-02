@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MedVisionAI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+13861731348a7291cb5fc078e642ee8eb465b595")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4c68937b27e5211691cf9d253f20fd74a7ad317b")]
 [assembly: System.Reflection.AssemblyProductAttribute("MedVisionAI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MedVisionAI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
