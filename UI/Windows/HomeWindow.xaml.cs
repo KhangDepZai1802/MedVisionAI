@@ -2,11 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using MedVisionAI.Models;
+
+// Alias rõ ràng tránh xung đột System.Windows.Forms vs System.Windows.Input
+using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
+using WpfMouseBtnArgs  = System.Windows.Input.MouseButtonEventArgs;
+using WpfMouseBtn      = System.Windows.Input.MouseButton;
+using WpfColor         = System.Windows.Media.Color;
+using WpfColorConv     = System.Windows.Media.ColorConverter;
 
 namespace MedVisionAI.UI.Windows
 {
@@ -21,16 +27,17 @@ namespace MedVisionAI.UI.Windows
             InitializeComponent();
 
             _clock = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            _clock.Tick += (_, _) => ClockLabel.Text = DateTime.Now.ToString("dd/MM/yyyy   HH:mm:ss");
+            _clock.Tick += (_, _) =>
+                ClockLabel.Text = DateTime.Now.ToString("dd/MM/yyyy  |  HH:mm:ss");
             _clock.Start();
-            ClockLabel.Text = DateTime.Now.ToString("dd/MM/yyyy   HH:mm:ss");
+            ClockLabel.Text = DateTime.Now.ToString("dd/MM/yyyy  |  HH:mm:ss");
         }
 
-        // ── Window chrome ────────────────────────────────────────────────────
+        // ── Window chrome ─────────────────────────────────────────────────────
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseLeftButtonDown(object sender, WpfMouseBtnArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left && WindowState == WindowState.Normal)
+            if (e.ChangedButton == WpfMouseBtn.Left && WindowState == WindowState.Normal)
                 DragMove();
         }
 
@@ -52,74 +59,74 @@ namespace MedVisionAI.UI.Windows
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
-            => Application.Current.Shutdown();
+        {
+            _clock.Stop();
+            Application.Current.Shutdown();
+        }
 
-        // ── Card hover animation ─────────────────────────────────────────────
+        // ── Card hover animation ──────────────────────────────────────────────
 
-        private void Card_MouseEnter(object sender, MouseEventArgs e)
+        private void Card_MouseEnter(object sender, WpfMouseEventArgs e)
         {
             if (sender is not Border card) return;
-            var anim = new DoubleAnimation(1.0, 1.025,
-                new Duration(TimeSpan.FromMilliseconds(150)));
             if (card.RenderTransform is ScaleTransform st)
             {
+                var anim = new DoubleAnimation(1.0, 1.025,
+                    new Duration(TimeSpan.FromMilliseconds(150)));
                 st.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
                 st.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
             }
-            card.BorderBrush = new SolidColorBrush(
-                System.Windows.Media.Color.FromRgb(0x71, 0x32, 0xF5));
+            card.BorderBrush     = new SolidColorBrush(WpfColor.FromRgb(0x71, 0x32, 0xF5));
             card.BorderThickness = new Thickness(2);
         }
 
-        private void Card_MouseLeave(object sender, MouseEventArgs e)
+        private void Card_MouseLeave(object sender, WpfMouseEventArgs e)
         {
             if (sender is not Border card) return;
-            var anim = new DoubleAnimation(1.025, 1.0,
-                new Duration(TimeSpan.FromMilliseconds(150)));
             if (card.RenderTransform is ScaleTransform st)
             {
+                var anim = new DoubleAnimation(1.025, 1.0,
+                    new Duration(TimeSpan.FromMilliseconds(150)));
                 st.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
                 st.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
             }
-            card.BorderBrush    = new SolidColorBrush(
-                System.Windows.Media.Color.FromRgb(0xEB, 0xEB, 0xF0));
+            card.BorderBrush     = new SolidColorBrush(WpfColor.FromRgb(0xEB, 0xEB, 0xF0));
             card.BorderThickness = new Thickness(1);
         }
 
-        // ── Module navigation ────────────────────────────────────────────────
+        // ── Module navigation ─────────────────────────────────────────────────
 
-        private void CardNST_Click(object sender, MouseButtonEventArgs e)
+        private void CardNST_Click(object sender, WpfMouseBtnArgs e)
             => OpenNSTModule();
 
-        private void CardBlood_Click(object sender, MouseButtonEventArgs e)
+        private void CardBlood_Click(object sender, WpfMouseBtnArgs e)
         {
             System.Windows.MessageBox.Show(
-                "Module Ung thư tế bào máu sẽ được hoàn thiện sau.\nTập trung vào NST trước.",
-                "MedVision AI", System.Windows.MessageBoxButton.OK,
+                "Module Ung thư tế bào máu sẽ được hoàn thiện sau.",
+                "MedVision AI",
+                System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
         }
 
-        private void CardMalaria_Click(object sender, MouseButtonEventArgs e)
+        private void CardMalaria_Click(object sender, WpfMouseBtnArgs e)
         {
             System.Windows.MessageBox.Show(
-                "Module Sốt rét sẽ được hoàn thiện sau.\nTập trung vào NST trước.",
-                "MedVision AI", System.Windows.MessageBoxButton.OK,
+                "Module Sốt rét sẽ được hoàn thiện sau.",
+                "MedVision AI",
+                System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
         }
 
         private void OpenNSTModule()
         {
-            var selectDialog = new ModelSelectDialog { Owner = this };
-            if (selectDialog.ShowDialog() != true) return;
+            var dlg = new ModelSelectDialog { Owner = this };
+            if (dlg.ShowDialog() != true) return;
 
-            var config    = selectDialog.SelectedConfig;
-            var nstWindow = new NSTWindow(config, BackToHome);
-            nstWindow.AnalysisDone += OnAnalysisDone;
+            var nst = new NSTWindow(dlg.SelectedConfig, BackToHome);
+            nst.AnalysisDone += OnAnalysisDone;
             Hide();
-            nstWindow.Show();
+            nst.Show();
         }
-
-        // ── Called from child windows ────────────────────────────────────────
 
         public void BackToHome()
         {
@@ -127,6 +134,8 @@ namespace MedVisionAI.UI.Windows
             WindowState = WindowState.Maximized;
             Activate();
         }
+
+        // ── Stats & history ───────────────────────────────────────────────────
 
         private void OnAnalysisDone(string filename, int count, bool isNormal, string result)
         {
@@ -139,51 +148,55 @@ namespace MedVisionAI.UI.Windows
 
             HistoryEmpty.Visibility = Visibility.Collapsed;
 
-            // Build history row
+            // Build row
             var row = new Grid { Height = 44 };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            var dotColor    = isNormal ? "#16A34A" : "#D97706";
-            var resultColor = isNormal ? "#15803D" : "#B45309";
+            string dotColor    = isNormal ? "#16A34A" : "#D97706";
+            string resultColor = isNormal ? "#15803D" : "#B45309";
 
-            void AddTb(int col, string text, string color,
-                       double size = 12, bool bold = false, bool trim = false)
+            TextBlock Tb(int col, string text, string hex, double sz = 12,
+                bool bold = false, bool trim = false)
             {
                 var tb = new TextBlock
                 {
-                    Text                = text,
-                    FontSize            = size,
-                    Foreground          = new SolidColorBrush(
-                        (System.Windows.Media.Color)ColorConverter.ConvertFromString(color)!),
-                    FontWeight          = bold ? FontWeights.Bold : FontWeights.Normal,
-                    VerticalAlignment   = VerticalAlignment.Center,
-                    Margin              = new Thickness(col == 2 ? 8 : 0, 0, col == 2 ? 8 : 0, 0),
-                    TextTrimming        = trim ? TextTrimming.CharacterEllipsis : TextTrimming.None,
+                    Text          = text,
+                    FontSize      = sz,
+                    Foreground    = new SolidColorBrush(
+                        (WpfColor)WpfColorConv.ConvertFromString(hex)!),
+                    FontWeight    = bold ? FontWeights.Bold : FontWeights.Normal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin        = new Thickness(col == 2 ? 8 : 0, 0,
+                                                  col == 2 ? 8 : 0, 0),
+                    TextTrimming  = trim
+                        ? System.Windows.TextTrimming.CharacterEllipsis
+                        : System.Windows.TextTrimming.None,
                 };
                 Grid.SetColumn(tb, col);
-                row.Children.Add(tb);
+                return tb;
             }
 
-            AddTb(0, "●", dotColor, 9);
-            AddTb(1, filename, "#101114", 12, false, true);
-            AddTb(2, $"{count} NST", "#9090A8", 11);
-            AddTb(3, result, resultColor, 11, true);
+            row.Children.Add(Tb(0, "●",       dotColor,    9));
+            row.Children.Add(Tb(1, filename,   "#101114",  12, false, true));
+            row.Children.Add(Tb(2, $"{count} NST", "#9090A8", 11));
+            row.Children.Add(Tb(3, result,     resultColor, 11, true));
 
-            // Separator line
-            row.Children.Add(new Border
+            // Separator bottom border
+            var sep = new Border
             {
-                BorderBrush     = new SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0xF0, 0xF0, 0xF8)),
+                BorderBrush     = new SolidColorBrush(WpfColor.FromRgb(0xF0, 0xF0, 0xF8)),
                 BorderThickness = new Thickness(0, 0, 0, 1),
                 VerticalAlignment = VerticalAlignment.Bottom,
-            });
+            };
+            Grid.SetColumnSpan(sep, 4);
+            row.Children.Add(sep);
 
-            // Insert at top, max 6 rows
             HistoryPanel.Children.Insert(0, row);
             _historyRows.Insert(0, row);
+
             while (_historyRows.Count > 6)
             {
                 var old = _historyRows[^1];

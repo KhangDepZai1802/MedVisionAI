@@ -1,8 +1,11 @@
 using System.Windows;
 
+// Alias rõ ràng để tránh xung đột System.Windows.Forms.Application
+using WpfApp = System.Windows.Application;
+
 namespace MedVisionAI
 {
-    public partial class App : Application
+    public partial class App : WpfApp
     {
         protected override void OnStartup(StartupEventArgs e)
         {

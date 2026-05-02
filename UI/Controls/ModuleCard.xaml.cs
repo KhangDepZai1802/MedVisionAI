@@ -1,15 +1,15 @@
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-// Alias rõ ràng để tránh xung đột với System.Drawing
-using WpfColor   = System.Windows.Media.Color;
-using WpfCursors = System.Windows.Input.Cursors;
+// Alias rõ ràng tránh xung đột với System.Windows.Forms
+using WpfUserControl = System.Windows.Controls.UserControl;
+using WpfColor       = System.Windows.Media.Color;
+using WpfCursors     = System.Windows.Input.Cursors;
 
 namespace MedVisionAI.UI.Controls
 {
-    public partial class ModuleCard : UserControl
+    public partial class ModuleCard : WpfUserControl
     {
         public static readonly DependencyProperty ModuleTitleProperty =
             DependencyProperty.Register("ModuleTitle", typeof(string), typeof(ModuleCard),
@@ -30,12 +30,12 @@ namespace MedVisionAI.UI.Controls
             DependencyProperty.Register("IsActive", typeof(bool), typeof(ModuleCard),
                 new PropertyMetadata(true, OnPropsChanged));
 
-        public string ModuleTitle       { get => (string)GetValue(ModuleTitleProperty);      set => SetValue(ModuleTitleProperty, value); }
-        public string ModuleDesc        { get => (string)GetValue(ModuleDescProperty);       set => SetValue(ModuleDescProperty, value); }
-        public string ModuleIcon        { get => (string)GetValue(ModuleIconProperty);       set => SetValue(ModuleIconProperty, value); }
-        public string AccentColor       { get => (string)GetValue(AccentColorProperty);      set => SetValue(AccentColorProperty, value); }
-        public string AccentLightColor  { get => (string)GetValue(AccentLightColorProperty); set => SetValue(AccentLightColorProperty, value); }
-        public bool   IsActive          { get => (bool)GetValue(IsActiveProperty);           set => SetValue(IsActiveProperty, value); }
+        public string ModuleTitle      { get => (string)GetValue(ModuleTitleProperty);      set => SetValue(ModuleTitleProperty, value); }
+        public string ModuleDesc       { get => (string)GetValue(ModuleDescProperty);       set => SetValue(ModuleDescProperty, value); }
+        public string ModuleIcon       { get => (string)GetValue(ModuleIconProperty);       set => SetValue(ModuleIconProperty, value); }
+        public string AccentColor      { get => (string)GetValue(AccentColorProperty);      set => SetValue(AccentColorProperty, value); }
+        public string AccentLightColor { get => (string)GetValue(AccentLightColorProperty); set => SetValue(AccentLightColorProperty, value); }
+        public bool   IsActive         { get => (bool)GetValue(IsActiveProperty);           set => SetValue(IsActiveProperty, value); }
 
         public event RoutedEventHandler? CardClicked;
 
