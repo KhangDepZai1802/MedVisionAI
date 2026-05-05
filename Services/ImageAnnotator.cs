@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OpenCvSharp;
+using MedVisionAI.Models;
 
 using CvPoint = OpenCvSharp.Point;
 using CvRect  = OpenCvSharp.Rect;
@@ -101,6 +102,78 @@ namespace MedVisionAI.Services
             }
         }
 
+        public static byte[] AnnotateAnomalies(string imagePath, AnalysisResult result)
+        {
+            string workPath = imagePath;
+            string? tempPath = null;
+
+            if (imagePath.Any(c => c > 127))
+            {
+                tempPath = Path.Combine(
+                    Path.GetTempPath(),
+                    $"mv_{Guid.NewGuid():N}.png");
+                File.Copy(imagePath, tempPath, overwrite: true);
+                workPath = tempPath;
+            }
+
+            try
+            {
+                using var img = Cv2.ImRead(workPath, ImreadModes.Color);
+                if (img.Empty())
+                    throw new Exception($"Cannot read image: {imagePath}");
+
+                int h = img.Rows, w = img.Cols;
+                var predictions = result.AnomalyPredictions
+                    .Where(p => p.BoundingBox is { Length: >= 4 })
+                    .OrderBy(p => p.Index)
+                    .ToList();
+
+                foreach (var pred in predictions)
+                {
+                    var b = pred.BoundingBox!;
+                    int x1 = Math.Clamp((int)b[0], 0, w - 1);
+                    int y1 = Math.Clamp((int)b[1], 0, h - 1);
+                    int x2 = Math.Clamp((int)b[2], 0, w - 1);
+                    int y2 = Math.Clamp((int)b[3], 0, h - 1);
+
+                    var color = pred.IsNormal
+                        ? new Scalar(60, 210, 80)
+                        : pred.Confidence >= 0.75f
+                            ? new Scalar(60, 60, 230)
+                            : new Scalar(50, 200, 230);
+
+                    Cv2.Rectangle(img,
+                        new CvPoint(x1, y1), new CvPoint(x2, y2),
+                        color, pred.IsNormal ? 2 : 3);
+
+                    string shortLabel = pred.IsNormal ? "OK" : ShortLabel(pred.Label);
+                    string lbl = $"{pred.Index}:{shortLabel} {pred.Confidence:P0}";
+                    var tsz = Cv2.GetTextSize(
+                        lbl, HersheyFonts.HersheySimplex, 0.38, 1, out _);
+                    int lblY = y1 - tsz.Height - 4;
+                    if (lblY < 0) lblY = y2;
+
+                    Cv2.Rectangle(img,
+                        new CvRect(x1, lblY, tsz.Width + 6, tsz.Height + 4),
+                        color, -1);
+                    Cv2.PutText(img, lbl,
+                        new CvPoint(x1 + 3, lblY + tsz.Height),
+                        HersheyFonts.HersheySimplex, 0.38,
+                        new Scalar(255, 255, 255), 1);
+                }
+
+                DrawAnomalyOverlay(img, result);
+
+                Cv2.ImEncode(".png", img, out var bytes);
+                return bytes;
+            }
+            finally
+            {
+                if (tempPath != null && File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+        }
+
         // ── Overlay panel — ALL text MUST be pure ASCII ───────────────────────
         private static void DrawOverlay(Mat img, ChromosomeAnalysisInfo info)
         {
@@ -168,6 +241,61 @@ namespace MedVisionAI.Services
             if (a >= 0.20f) return "E";
             if (a >= 0.13f) return "F";
             return "G";
+        }
+
+        private static void DrawAnomalyOverlay(Mat img, AnalysisResult result)
+        {
+            using var ov = img.Clone();
+            Cv2.Rectangle(ov, new CvRect(8, 8, 330, 108),
+                new Scalar(15, 15, 15), -1);
+            Cv2.AddWeighted(ov, 0.55, img, 0.45, 0, img);
+
+            var white  = new Scalar(255, 255, 255);
+            var green  = new Scalar(60,  210, 80);
+            var red    = new Scalar(60,  60,  230);
+            var yellow = new Scalar(50,  200, 230);
+
+            int total = result.AnomalyPredictions.Count;
+            int abnormal = result.AnomalyPredictions.Count(p => !p.IsNormal);
+            float maxConf = result.AnomalyPredictions.Count > 0
+                ? result.AnomalyPredictions.Max(p => p.Confidence)
+                : 0;
+
+            int x = 14, y = 30, lh = 23;
+            var riskColor = abnormal == 0 ? green : maxConf >= 0.75f ? red : yellow;
+
+            Cv2.PutText(img, $"Crop classifier: {total} NST",
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.48,
+                white, 1);
+            y += lh;
+            Cv2.PutText(img, $"Suspected abnormal: {abnormal}",
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.48,
+                riskColor, 1);
+            y += lh;
+            Cv2.PutText(img, $"Risk: {ToAsciiRisk(result.RiskLevel)}",
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.43,
+                riskColor, 1);
+        }
+
+        private static string ShortLabel(string label)
+        {
+            if (label.Contains("Trisomy 21")) return "Down";
+            if (label.Contains("Trisomy 18")) return "Edwards";
+            if (label.Contains("Trisomy 13")) return "Patau";
+            if (label.Contains("Turner")) return "Turner";
+            if (label.Contains("Klinefelter")) return "XXY";
+            if (label.Contains("Binh thuong") || label.Contains("Bình thường")) return "OK";
+            return label.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Abn";
+        }
+
+        private static string ToAsciiRisk(string risk)
+        {
+            if (risk.Contains("cao", StringComparison.OrdinalIgnoreCase))
+                return "High";
+            if (risk.Contains("dõi", StringComparison.OrdinalIgnoreCase) ||
+                risk.Contains("doi", StringComparison.OrdinalIgnoreCase))
+                return "Monitor";
+            return "Normal";
         }
     }
 }

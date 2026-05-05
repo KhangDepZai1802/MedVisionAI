@@ -92,7 +92,7 @@ namespace MedVisionAI.UI.Windows {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/MedVisionAI;component/ui/windows/settingsdialog.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/MedVisionAI;V1.0.0.0;component/ui/windows/settingsdialog.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\UI\Windows\SettingsDialog.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

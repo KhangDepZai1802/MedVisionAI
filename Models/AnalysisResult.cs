@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MedVisionAI.Models
 {
     /// <summary>
@@ -30,6 +32,9 @@ namespace MedVisionAI.Models
         /// <summary>Danh sách bounding box [x1,y1,x2,y2,confidence].</summary>
         public List<float[]> BoundingBoxes { get; set; } = new();
 
+        /// <summary>Kết quả classifier bất thường cho từng ảnh NST đã crop.</summary>
+        public List<AnomalyPrediction> AnomalyPredictions { get; set; } = new();
+
         /// <summary>Danh sách area tương đối của từng NST (0.0 – 1.0).</summary>
         public List<float> NormalizedAreas { get; set; } = new();
 
@@ -48,6 +53,27 @@ namespace MedVisionAI.Models
         public float MeanArea   { get; set; }
         public float StdArea    { get; set; }
         public float CvPercent  { get; set; }
+    }
+
+    public class AnomalyPrediction
+    {
+        [JsonPropertyName("index")]
+        public int Index { get; set; }
+
+        [JsonPropertyName("label")]
+        public string Label { get; set; } = "";
+
+        [JsonPropertyName("confidence")]
+        public float Confidence { get; set; }
+
+        [JsonPropertyName("class_index")]
+        public int ClassIndex { get; set; }
+
+        public float[]? BoundingBox { get; set; }
+
+        public bool IsNormal =>
+            Label.StartsWith("Binh thuong", StringComparison.OrdinalIgnoreCase) ||
+            Label.StartsWith("Bình thường", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Item trong lịch sử phân tích (hiển thị ở HomeWindow).</summary>

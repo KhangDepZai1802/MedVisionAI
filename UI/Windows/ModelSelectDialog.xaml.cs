@@ -55,10 +55,15 @@ namespace MedVisionAI.UI.Windows
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(SelectedConfig.SegmentationModelPath))
+            bool hasAnyModel =
+                !string.IsNullOrEmpty(SelectedConfig.SegmentationModelPath) ||
+                !string.IsNullOrEmpty(SelectedConfig.OverlapModelPath) ||
+                !string.IsNullOrEmpty(SelectedConfig.AnomalyModelPath);
+
+            if (!hasAnyModel)
             {
                 System.Windows.MessageBox.Show(
-                    "Vui lòng chọn ít nhất Model Phân đoạn NST (bắt buộc).\n\n" +
+                    "Vui lòng chọn ít nhất một model AI cho module NST.\n\n" +
                     "Nếu chưa có model, nhấn 'Bỏ qua' để xem giao diện.",
                     "MedVision AI",
                     System.Windows.MessageBoxButton.OK,
