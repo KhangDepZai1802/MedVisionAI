@@ -121,18 +121,6 @@ namespace MedVisionAI.UI.Windows
                 _ => "Xác định bất thường NST"
             };
 
-            var ans = WinMsgBox.Show(
-                $"Chuc nang \"{tabName}\" chua co model AI.\n\n" +
-                "Nhan OK de chon file model, hoac Cancel de dung Demo (du lieu gia).",
-                "MedVision AI",
-                WinMsgBtn.OKCancel, WinMsgImg.Question);
-
-            if (ans == WinMsgResult.Cancel)
-            {
-                // Demo mode — không set model path, để null → InferenceService sẽ gen demo boxes
-                return true;
-            }
-
             var path = BrowseModel($"Chọn Model: {tabName}");
             if (path == null) return false; // user đóng dialog → không chuyển
 
@@ -155,7 +143,7 @@ namespace MedVisionAI.UI.Windows
             // Model badge
             var st = GetState(_activeTab);
             ModelBadgeText.Text = string.IsNullOrEmpty(st.ModelPath)
-                ? "Demo (không có model)"
+                ? "Chưa chọn"
                 : System.IO.Path.GetFileName(st.ModelPath);
         }
 
@@ -414,12 +402,23 @@ namespace MedVisionAI.UI.Windows
         // TAB 2 — XÁC ĐỊNH BẤT THƯỜNG NST
         // ══════════════════════════════════════════════════════════════════════
 
-        private void T2_BtnLoad_Click(object s, RoutedEventArgs e) => LoadImageForTab(2);
-        private void T2_ImagePane_Drop(object s, WinDragArgs e)    => DropImageForTab(2, e);
-
         private async void T2_BtnRun_Click(object s, RoutedEventArgs e)
         {
             if (_st2.ImagePath == null) return;
+            
+            // Nhắc nhở người dùng chọn model AI nếu chưa có
+            if (string.IsNullOrWhiteSpace(_st2.ModelPath))
+            {
+                var ans = WinMsgBox.Show(
+                    "Để xác định bất thường NST, bạn cần chọn model AI.\n\n" +
+                    "Bấm OK để chọn file model hoặc Cancel để hủy.",
+                    "MedVision AI — Cần chọn Model AI",
+                    WinMsgBtn.OKCancel, WinMsgImg.Information);
+
+                if (ans == WinMsgResult.Cancel)
+                    return;
+            }
+            
             await RunAnalysisTab2();
         }
 
@@ -519,6 +518,12 @@ namespace MedVisionAI.UI.Windows
                     ok ? "#15803D" : "#DC2626",
                     ok ? "#DCFCE7" : "#FFF0F0",
                     ok ? "#86EFAC" : "#FCA5A5");
+
+                // Hiển thị tab "Xác định bất thường" sau khi phân tích lần đầu tiên
+                if (Tab2Btn.Visibility == Visibility.Collapsed)
+                {
+                    Tab2Btn.Visibility = Visibility.Visible;
+                }
 
                 AnalysisDone?.Invoke(
                     System.IO.Path.GetFileName(_st2.ImagePath ?? ""),

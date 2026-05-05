@@ -855,12 +855,6 @@
                                            Foreground="#9090A8" Margin="0,0,0,14"/>
                                 <Rectangle Style="{StaticResource HRule}" Margin="0,0,0,14"/>
 
-                                <Button x:Name="T2BtnLoad" Content="📂  Tải ảnh lên"
-                                        Height="44" FontSize="13" FontWeight="Bold"
-                                        Style="{StaticResource BtnGreenAction}"
-                                        Margin="0,0,0,10"
-                                        Click="T2_BtnLoad_Click"/>
-
                                 <Button x:Name="T2BtnRun" Content="⚠️  Phân tích bất thường"
                                         Height="40" FontSize="13" FontWeight="Bold"
                                         Style="{StaticResource BtnGreenAction}"
@@ -900,8 +894,7 @@
                                 </Grid.ColumnDefinitions>
                                 <Border Grid.Column="0" Background="#FAFAFA"
                                         BorderBrush="#86EFAC" BorderThickness="1.5"
-                                        CornerRadius="12" AllowDrop="True"
-                                        Drop="T2_ImagePane_Drop">
+                                        CornerRadius="12">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>

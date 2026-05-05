@@ -37,9 +37,17 @@ namespace MedVisionAI.Services
                 // ── BƯỚC 1: Phân đoạn NST (best.pt / YOLO hoặc ONNX) ──────────
                 if (!hasSegmentationModel)
                 {
-                    boxes = hasOverlapModel
-                        ? new List<DetectionBox>()
-                        : GenerateDemoBoxes(origW, origH);
+                    // Nếu không có model phân đoạn nhưng có model chồng lấn,
+                    // tiếp tục với danh sách rỗng rồi chạy bước chồng lấn.
+                    if (hasOverlapModel)
+                    {
+                        boxes = new List<DetectionBox>();
+                    }
+                    else
+                    {
+                        throw new Exception(
+                            "Mô hình phân đoạn NST chưa được chọn. Vui lòng chọn file model trước khi phân tích.");
+                    }
                 }
                 else
                 {
@@ -387,29 +395,6 @@ namespace MedVisionAI.Services
         }
 
         private readonly record struct CropInfo(string Path, int BoxIndex);
-
-        // ── Demo boxes (test UI không cần model) ────────────────────────────────
-        private static List<DetectionBox> GenerateDemoBoxes(int w, int h)
-        {
-            var rng   = new Random(42);
-            var boxes = new List<DetectionBox>();
-            for (int i = 0; i < 46; i++)
-            {
-                float bw = rng.NextSingle() * 0.06f + 0.02f;
-                float bh = bw * (rng.NextSingle() * 0.5f + 1.5f);
-                float cx = rng.NextSingle() * (1 - bw) + bw / 2;
-                float cy = rng.NextSingle() * (1 - bh) + bh / 2;
-                boxes.Add(new DetectionBox
-                {
-                    X1         = (cx - bw / 2) * w,
-                    Y1         = (cy - bh / 2) * h,
-                    X2         = (cx + bw / 2) * w,
-                    Y2         = (cy + bh / 2) * h,
-                    Confidence = rng.NextSingle() * 0.3f + 0.7f,
-                });
-            }
-            return boxes;
-        }
 
         // ── Ensure ASCII path cho OpenCvSharp ───────────────────────────────────
         private static string EnsureAscii(string path, out string? tempPath)
