@@ -84,6 +84,34 @@ namespace MedVisionAI.Services
             return result.Predictions ?? new List<AnomalyPrediction>();
         }
 
+        public AnomalyPrediction RunImageClassifier(
+            string modelPath, string imagePath, string modelType)
+        {
+            var result = CallBridge(JsonSerializer.Serialize(new
+            {
+                model      = modelPath,
+                image      = imagePath,
+                model_type = modelType
+            }));
+
+            if (result.Predictions is { Count: > 0 })
+                return result.Predictions[0];
+
+            if (!string.IsNullOrWhiteSpace(result.Label))
+            {
+                float conf = result.Boxes?.Count > 0 ? result.Boxes[0][4] : 0f;
+                return new AnomalyPrediction
+                {
+                    Index = 0,
+                    Label = result.Label,
+                    Confidence = conf,
+                    ClassIndex = 0,
+                };
+            }
+
+            throw new Exception("Python bridge không trả về kết quả phân loại.");
+        }
+
         // ── Shared helper: gọi bridge.py và trả về BridgeResult ─────────────────
         private BridgeResult CallBridge(string jsonInput)
         {
@@ -228,6 +256,8 @@ namespace MedVisionAI.Services
 #   best.pt         -> YOLO (Ultralytics full model)
 #   NSTChonglan.pth -> Mask R-CNN state_dict (torchvision)
 #   BatThuongNST*   -> ResNet50 classifier state_dict (24 classes)
+#   best_MalariaNET -> ResNet18 image classifier
+#   best_BloodCancerNET -> ResNet50 image classifier
 import sys, json, traceback, os, warnings
 # Redirect ALL warnings to stderr so stdout stays clean JSON
 warnings.filterwarnings('ignore')
@@ -268,6 +298,10 @@ def main():
         elif model_type == 'resnet_classifier_batch':
             boxes = []
             predictions = run_resnet50_classifier_batch(model_path, image_paths)
+        elif model_type == 'malaria_classifier':
+            boxes, label, predictions = run_malaria_classifier(model_path, image_path)
+        elif model_type == 'blood_cancer_classifier':
+            boxes, label, predictions = run_blood_cancer_classifier(model_path, image_path)
         elif model_type == 'keras':
             boxes = run_keras(model_path, image_path)
         else:
@@ -277,6 +311,8 @@ def main():
                 '  best.pt              -> YOLO (Ultralytics)\n'
                 '  NSTChonglan.pth      -> Mask R-CNN state_dict\n'
                 '  BatThuongNST*.pth    -> ResNet50 classifier (24 classes)\n'
+                '  best_MalariaNET.pth  -> ResNet18 malaria classifier\n'
+                '  best_BloodCancerNET.pth -> ResNet50 blood-cell classifier\n'
                 '  *.h5                 -> Keras/TensorFlow'
             )
 
@@ -305,6 +341,12 @@ def detect_model_type(model_path):
 
     if 'batthuong' in name or 'bat_thuong' in name or 'anomaly' in name:
         return 'resnet_classifier'
+
+    if 'malaria' in name or 'lamaria' in name or 'parasite' in name:
+        return 'malaria_classifier'
+
+    if 'blood' in name or 'cancer' in name or 'all' in name:
+        return 'blood_cancer_classifier'
 
     # Fallback theo extension
     if ext == 'pt':
@@ -511,6 +553,96 @@ def run_resnet50_classifier_batch(model_path, image_paths):
         })
 
     return predictions
+
+
+# --------------------------------------------------
+# 3b. Simple medical image classifiers
+# --------------------------------------------------
+def run_malaria_classifier(model_path, image_path):
+    import torch
+    from torchvision import models
+
+    model = models.resnet18(weights=None)
+    in_f = model.fc.in_features
+    model.fc = torch.nn.Sequential(
+        torch.nn.Dropout(0.3),
+        torch.nn.Linear(in_f, 256),
+        torch.nn.ReLU(),
+        torch.nn.Dropout(0.2),
+        torch.nn.Linear(256, 2),
+    )
+
+    return classify_single_image(
+        model_path, image_path, model,
+        ['Parasitized', 'Uninfected'])
+
+
+def run_blood_cancer_classifier(model_path, image_path):
+    import torch
+    from torchvision import models
+
+    model = models.resnet50(weights=None)
+    in_feat = model.fc.in_features
+    model.fc = torch.nn.Sequential(
+        torch.nn.Dropout(0.4),
+        torch.nn.Linear(in_feat, 512),
+        torch.nn.ReLU(),
+        torch.nn.BatchNorm1d(512),
+        torch.nn.Dropout(0.2),
+        torch.nn.Linear(512, 4)
+    )
+
+    return classify_single_image(
+        model_path, image_path, model,
+        ['Benign', 'Early', 'Pre', 'Pro'])
+
+
+def classify_single_image(model_path, image_path, model, class_names):
+    import torch
+    import cv2
+    import numpy as np
+    from torchvision import transforms
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    state = torch.load(model_path, map_location=device, weights_only=False)
+    if isinstance(state, dict):
+        for key in ('model', 'state_dict', 'model_state_dict'):
+            if key in state:
+                state = state[key]
+                break
+    if isinstance(state, dict) and any(k.startswith('module.') for k in state.keys()):
+        state = {k.replace('module.', '', 1): v for k, v in state.items()}
+    model.load_state_dict(state)
+    model.to(device).eval()
+
+    img_bgr = cv2.imread(image_path)
+    if img_bgr is None:
+        raise ValueError(f'Cannot read image: {image_path}')
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+    tfm = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406],
+                             [0.229, 0.224, 0.225]),
+    ])
+
+    tensor = tfm(img_rgb).unsqueeze(0).to(device)
+    with torch.no_grad():
+        logits = model(tensor)
+        probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
+
+    top_class = int(np.argmax(probs))
+    top_conf = float(probs[top_class])
+    label = class_names[top_class] if top_class < len(class_names) else f'Class {top_class}'
+    prediction = {
+        'index': 0,
+        'label': label,
+        'confidence': top_conf,
+        'class_index': top_class
+    }
+    return [[0.0, 0.0, 1.0, 1.0, top_conf]], label, [prediction]
 
 
 # --------------------------------------------------

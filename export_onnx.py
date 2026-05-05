@@ -1,15 +1,24 @@
-from ultralytics import YOLO
+"""
+Compatibility wrapper for the old MedVisionAI export script.
 
-# Thay đường dẫn này thành đường dẫn file .pt của bạn
-model = YOLO(r"C:\Users\khang\OneDrive\Documents\KTPM_DO-AN\NST_AI_Project\models\best.pt")
+Use the dedicated scripts in Tools/OnnxExport instead:
 
-# Xuất sang ONNX
-model.export(
-    format="onnx",
-    imgsz=640,      # kích thước ảnh input, thường là 640
-    opset=11,       # phiên bản ONNX, 11 là ổn định nhất
-    simplify=True,  # tối ưu model
-)
+  python Tools/OnnxExport/export_yolo_best.py --model best.pt --output best.onnx
+  python Tools/OnnxExport/export_blood_cancer.py --model best_BloodCancerNET.pth --output best_BloodCancerNET.onnx
+  python Tools/OnnxExport/export_malaria.py --model best_MalariaNET.pth --output best_MalariaNET.onnx
+  python Tools/OnnxExport/export_anomaly_nst.py --model BatThuongNST.pth --output BatThuongNST.onnx
+  python Tools/OnnxExport/export_overlap_maskrcnn.py --model NSTChonglan.pth --output NSTChonglan.onnx
+"""
 
-print("Xuất thành công!")
-print("File .onnx nằm cùng thư mục với file .pt")
+from pathlib import Path
+
+
+def main():
+    guide = Path("Tools/OnnxExport/README_ONNX.md")
+    print("MedVisionAI ONNX export scripts are in Tools/OnnxExport.")
+    if guide.exists():
+        print(f"Read: {guide}")
+
+
+if __name__ == "__main__":
+    main()

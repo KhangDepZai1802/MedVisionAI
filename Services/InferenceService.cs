@@ -87,9 +87,12 @@ namespace MedVisionAI.Services
                 {
                     try
                     {
-                        var overlapBoxes = RunPythonBridge(
-                            _config.OverlapModelPath!, workPath,
-                            origW, origH, "maskrcnn");
+                        var overlapBoxes =
+                            ModelFormatDetector.Detect(_config.OverlapModelPath) == ModelFormat.Onnx
+                                ? RunOnnxMaskRcnn(_config.OverlapModelPath!, workPath, origW, origH)
+                                : RunPythonBridge(
+                                    _config.OverlapModelPath!, workPath,
+                                    origW, origH, "maskrcnn");
 
                         // Nếu Mask R-CNN detect được nhiều box hơn → dùng kết quả đó
                         if (!hasSegmentationModel || overlapBoxes.Count > boxes.Count)
@@ -157,9 +160,19 @@ namespace MedVisionAI.Services
                 if (crops.Count == 0)
                     throw new InvalidOperationException("Không crop được NST hợp lệ từ kết quả phân đoạn.");
 
-                var bridge = new PythonBridge();
-                var rawPredictions = bridge.RunClassifierBatch(
-                    modelWork, crops.Select(c => c.Path).ToList());
+                List<AnomalyPrediction> rawPredictions;
+                var cropPaths = crops.Select(c => c.Path).ToList();
+                if (ModelFormatDetector.Detect(anomalyModelPath) == ModelFormat.Onnx)
+                {
+                    var onnx = new OnnxClassifierService(
+                        modelWork, OnnxClassifierService.AnomalyClassNames);
+                    rawPredictions = onnx.PredictBatch(cropPaths);
+                }
+                else
+                {
+                    var bridge = new PythonBridge();
+                    rawPredictions = bridge.RunClassifierBatch(modelWork, cropPaths);
+                }
 
                 var mappedPredictions = new List<AnomalyPrediction>();
                 foreach (var pred in rawPredictions.OrderBy(p => p.Index))
@@ -200,9 +213,38 @@ namespace MedVisionAI.Services
         private static List<DetectionBox> RunOnnx(
             string modelPath, Mat img, int origW, int origH)
         {
-            using var engine  = new OnnxInferenceEngine(modelPath);
+            using var engine  = new OnnxInferenceEngine(
+                modelPath, OnnxPreprocessMode.UnitScale);
             using var outputs = engine.Run(img);
-            return OutputParser.ParseDetections(outputs, origW, origH, 640, 640);
+            return OutputParser.ParseDetections(
+                outputs, origW, origH, engine.InputWidth, engine.InputHeight);
+        }
+
+        private static List<DetectionBox> RunOnnxMaskRcnn(
+            string modelPath, string imagePath, int origW, int origH)
+        {
+            string modelWork = EnsureAscii(modelPath, out string? tempModel);
+            string imageWork = EnsureAscii(imagePath, out string? tempImage);
+
+            try
+            {
+                using var img = Cv2.ImRead(imageWork, ImreadModes.Color);
+                if (img.Empty())
+                    throw new Exception($"Cannot read image: {imagePath}");
+
+                using var engine = new OnnxInferenceEngine(
+                    modelWork, OnnxPreprocessMode.UnitScale);
+                using var outputs = engine.Run(img);
+                return OutputParser.ParseMaskRcnn(
+                    outputs, origW, origH, engine.InputWidth, engine.InputHeight);
+            }
+            finally
+            {
+                if (tempModel != null && File.Exists(tempModel))
+                    File.Delete(tempModel);
+                if (tempImage != null && File.Exists(tempImage))
+                    File.Delete(tempImage);
+            }
         }
 
         // ── Python Bridge — có thêm modelType ────────────────────────────────────

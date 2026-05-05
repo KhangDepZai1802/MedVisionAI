@@ -13,6 +13,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>Assets\Brand\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +23,12 @@
 
   <!-- Thêm đoạn này -->
   <ItemGroup>
+    <Resource Include="Assets\Brand\AppIcon.ico"/>
+    <Resource Include="Assets\Brand\logoNST.png"/>
+    <Resource Include="Assets\Brand\HeroLogo.png"/>
+    <Resource Include="Assets\Brand\BloodDetection.png"/>
+    <Resource Include="Assets\Brand\Parasite.png"/>
+    <Resource Include="Assets\Brand\NST.png"/>
     <Resource Include="Themes\KrakenTheme.xaml"/>
     <Resource Include="Themes\Animations.xaml"/>
   </ItemGroup>

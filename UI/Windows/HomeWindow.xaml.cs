@@ -23,6 +23,8 @@ namespace MedVisionAI.UI.Windows
 
         // ── Giữ instance NSTWindow trong suốt phiên ──────────────────────────
         private NSTWindow? _nstWindow;
+        private MedicalClassifierWindow? _bloodWindow;
+        private MedicalClassifierWindow? _malariaWindow;
 
         public HomeWindow()
         {
@@ -88,22 +90,10 @@ namespace MedVisionAI.UI.Windows
             => OpenNSTModule();
 
         private void CardBlood_Click(object sender, WpfMouseBtnArgs e)
-        {
-            System.Windows.MessageBox.Show(
-                "Module Ung thư tế bào máu sẽ được hoàn thiện sau.",
-                "MedVision AI",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information);
-        }
+            => OpenClassifierModule(MedicalClassifierKind.BloodCancer);
 
         private void CardMalaria_Click(object sender, WpfMouseBtnArgs e)
-        {
-            System.Windows.MessageBox.Show(
-                "Module Sốt rét sẽ được hoàn thiện sau.",
-                "MedVision AI",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information);
-        }
+            => OpenClassifierModule(MedicalClassifierKind.Malaria);
 
         private void OpenNSTModule()
         {
@@ -126,6 +116,31 @@ namespace MedVisionAI.UI.Windows
             _nstWindow.Show();
         }
 
+        private void OpenClassifierModule(MedicalClassifierKind kind)
+        {
+            var existing = kind == MedicalClassifierKind.BloodCancer
+                ? _bloodWindow
+                : _malariaWindow;
+
+            if (existing != null && existing.IsLoaded)
+            {
+                Hide();
+                existing.ReActivate();
+                return;
+            }
+
+            var window = new MedicalClassifierWindow(kind, BackToHome);
+            window.AnalysisDone += OnClassifierAnalysisDone;
+
+            if (kind == MedicalClassifierKind.BloodCancer)
+                _bloodWindow = window;
+            else
+                _malariaWindow = window;
+
+            Hide();
+            window.Show();
+        }
+
         public void BackToHome()
         {
             Show();
@@ -136,6 +151,14 @@ namespace MedVisionAI.UI.Windows
         // ── Stats & history ───────────────────────────────────────────────────
 
         private void OnAnalysisDone(string filename, int count, bool isNormal, string result)
+            => AddAnalysisHistory(filename, $"{count} NST", isNormal, result);
+
+        private void OnClassifierAnalysisDone(
+            string filename, string label, bool isNormal, string result)
+            => AddAnalysisHistory(filename, label, isNormal, result);
+
+        private void AddAnalysisHistory(
+            string filename, string detailText, bool isNormal, string result)
         {
             _total++;
             if (isNormal) _normal++; else _warning++;
@@ -179,7 +202,7 @@ namespace MedVisionAI.UI.Windows
 
             row.Children.Add(Tb(0, "●",       dotColor,    9));
             row.Children.Add(Tb(1, filename,   "#101114",  12, false, true));
-            row.Children.Add(Tb(2, $"{count} NST", "#9090A8", 11));
+            row.Children.Add(Tb(2, detailText, "#9090A8", 11));
             row.Children.Add(Tb(3, result,     resultColor, 11, true));
 
             // Separator bottom border

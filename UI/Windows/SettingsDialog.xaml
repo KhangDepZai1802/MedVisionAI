@@ -5,6 +5,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
+        Icon="/Assets/Brand/AppIcon.ico"
         ResizeMode="NoResize"
         Width="620" SizeToContent="Height"
         WindowStartupLocation="CenterOwner"

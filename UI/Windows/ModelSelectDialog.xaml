@@ -5,6 +5,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
+        Icon="/Assets/Brand/AppIcon.ico"
         ResizeMode="NoResize"
         Width="580" Height="Auto"
         SizeToContent="Height"
@@ -25,12 +26,19 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <Border Background="#F3EEFF" CornerRadius="10"
+                    <Border Background="Transparent" CornerRadius="10"
                             Padding="10,6" HorizontalAlignment="Left"
                             Margin="0,0,0,10">
-                        <TextBlock Text="🧬  Phân tích Nhiễm sắc thể"
-                                   FontSize="12" FontWeight="Bold"
-                                   Foreground="#7132F5"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Brand/logoNST.png"
+                                   Width="18" Height="18"
+                                   Stretch="Uniform"
+                                   Margin="0,0,8,0"/>
+                            <TextBlock Text="Phân tích Nhiễm sắc thể"
+                                       FontSize="12" FontWeight="Bold"
+                                       Foreground="#7132F5"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Border>
                     <TextBlock Text="Chọn model AI cho từng chức năng"
                                FontSize="20" FontWeight="Black"

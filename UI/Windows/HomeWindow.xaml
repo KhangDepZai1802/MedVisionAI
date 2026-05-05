@@ -5,6 +5,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
+        Icon="/Assets/Brand/AppIcon.ico"
         WindowState="Maximized"
         MinWidth="1100" MinHeight="700">
 
@@ -29,9 +30,12 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Width="36" Height="36" CornerRadius="10"
-                                Background="{StaticResource PrimaryLightBrush}" Margin="0,0,12,0">
-                            <TextBlock Text="🧬" FontSize="18"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                Background="Transparent" Margin="0,0,12,0">
+                            <Image Source="/Assets/Brand/logoNST.png"
+                                   Width="28" Height="28"
+                                   Stretch="Uniform"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="MedVision AI" FontSize="15" FontWeight="Bold"
@@ -92,8 +96,11 @@
                                 <TextBlock Text="Nền tảng AI phân tích hình ảnh y tế  ·  Hỗ trợ chẩn đoán lâm sàng"
                                            FontSize="13" Foreground="#E0D0FF" Margin="0,6,0,0"/>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="🧬"
-                                       FontSize="52" VerticalAlignment="Center"/>
+                            <Image Grid.Column="1"
+                                   Source="/Assets/Brand/HeroLogo.png"
+                                   Width="112" Height="112"
+                                   Stretch="Uniform"
+                                   VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
 
@@ -117,9 +124,12 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <Border Width="46" Height="46" CornerRadius="12"
-                                        Background="#F3EEFF" HorizontalAlignment="Left">
-                                    <TextBlock Text="🧬" FontSize="20"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        Background="Transparent" HorizontalAlignment="Left">
+                                    <Image Source="/Assets/Brand/NST.png"
+                                           Width="34" Height="34"
+                                           Stretch="Uniform"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                                 </Border>
                                 <TextBlock Grid.Row="1" Text="Phân tích nhiễm sắc thể"
                                            FontSize="15" FontWeight="Bold"
@@ -150,9 +160,12 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <Border Width="46" Height="46" CornerRadius="12"
-                                        Background="#FFF0F0" HorizontalAlignment="Left">
-                                    <TextBlock Text="🩸" FontSize="20"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        Background="Transparent" HorizontalAlignment="Left">
+                                    <Image Source="/Assets/Brand/BloodDetection.png"
+                                           Width="34" Height="34"
+                                           Stretch="Uniform"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                                 </Border>
                                 <TextBlock Grid.Row="1" Text="Phát hiện ung thư tế bào máu"
                                            FontSize="15" FontWeight="Bold"
@@ -183,9 +196,12 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <Border Width="46" Height="46" CornerRadius="12"
-                                        Background="#F0FDF4" HorizontalAlignment="Left">
-                                    <TextBlock Text="🦠" FontSize="20"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        Background="Transparent" HorizontalAlignment="Left">
+                                    <Image Source="/Assets/Brand/Parasite.png"
+                                           Width="34" Height="34"
+                                           Stretch="Uniform"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                                 </Border>
                                 <TextBlock Grid.Row="1" Text="Phát hiện ký sinh trùng sốt rét"
                                            FontSize="15" FontWeight="Bold"

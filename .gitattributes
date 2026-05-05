@@ -1,0 +1,2 @@
+AI/*.onnx filter=lfs diff=lfs merge=lfs -text
+AI/**/*.onnx filter=lfs diff=lfs merge=lfs -text

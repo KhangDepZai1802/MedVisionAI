@@ -1,5 +1,6 @@
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
+using MedVisionAI.Models;
 using OpenCvSharp;
 
 namespace MedVisionAI.Services
@@ -61,6 +62,102 @@ namespace MedVisionAI.Services
 
             // Apply NMS để loại bỏ box trùng lặp
             return ApplyNms(raw, nmsThreshold);
+        }
+
+        public static AnomalyPrediction ParseClassification(
+            IDisposableReadOnlyCollection<DisposableNamedOnnxValue> outputs,
+            IReadOnlyList<string> classNames,
+            int index = 0)
+        {
+            var tensor = outputs.First().AsTensor<float>();
+            var values = tensor.ToArray();
+            if (values.Length == 0)
+                throw new InvalidOperationException("ONNX classifier không trả về logits/probability.");
+
+            var probabilities = ToProbabilities(values);
+            int topClass = 0;
+            float topConf = probabilities[0];
+            for (int i = 1; i < probabilities.Length; i++)
+            {
+                if (probabilities[i] <= topConf) continue;
+                topClass = i;
+                topConf = probabilities[i];
+            }
+
+            string label = topClass < classNames.Count
+                ? classNames[topClass]
+                : $"Class {topClass}";
+
+            return new AnomalyPrediction
+            {
+                Index = index,
+                Label = label,
+                Confidence = topConf,
+                ClassIndex = topClass,
+            };
+        }
+
+        public static List<DetectionBox> ParseMaskRcnn(
+            IDisposableReadOnlyCollection<DisposableNamedOnnxValue> outputs,
+            int origW, int origH,
+            int modelW, int modelH,
+            float confThreshold = DefaultConfThreshold)
+        {
+            var items = outputs.ToList();
+            var boxesOutput = FindOutput(items, "boxes", "detection_boxes");
+            var scoresOutput = FindOutput(items, "scores", "detection_scores");
+            var labelsOutput = FindOutput(items, "labels", "detection_classes");
+
+            if (boxesOutput == null || scoresOutput == null)
+                return new List<DetectionBox>();
+
+            var boxes = boxesOutput.AsTensor<float>();
+            var scores = scoresOutput.AsTensor<float>();
+            long[]? labels = null;
+            if (labelsOutput != null)
+            {
+                try { labels = labelsOutput.AsTensor<long>().ToArray(); }
+                catch { labels = null; }
+            }
+
+            int boxCount = GetBoxCount(boxes);
+            var result = new List<DetectionBox>();
+
+            for (int i = 0; i < boxCount; i++)
+            {
+                float score = ReadVector(scores, i);
+                if (score < confThreshold)
+                    continue;
+
+                var (x1, y1, x2, y2) = ReadBox(boxes, i);
+                bool normalized = Math.Abs(x1) <= 1.5f && Math.Abs(y1) <= 1.5f &&
+                                  Math.Abs(x2) <= 1.5f && Math.Abs(y2) <= 1.5f;
+
+                if (normalized)
+                {
+                    x1 *= origW; x2 *= origW;
+                    y1 *= origH; y2 *= origH;
+                }
+                else
+                {
+                    x1 = x1 / Math.Max(1, modelW) * origW;
+                    x2 = x2 / Math.Max(1, modelW) * origW;
+                    y1 = y1 / Math.Max(1, modelH) * origH;
+                    y2 = y2 / Math.Max(1, modelH) * origH;
+                }
+
+                result.Add(new DetectionBox
+                {
+                    X1 = Math.Clamp(Math.Min(x1, x2), 0, origW - 1),
+                    Y1 = Math.Clamp(Math.Min(y1, y2), 0, origH - 1),
+                    X2 = Math.Clamp(Math.Max(x1, x2), 0, origW - 1),
+                    Y2 = Math.Clamp(Math.Max(y1, y2), 0, origH - 1),
+                    Confidence = score,
+                    ClassId = labels != null && i < labels.Length ? (int)labels[i] : 1,
+                });
+            }
+
+            return ApplyNms(result, DefaultNmsThreshold);
         }
 
         // ── Format A: [1, num_boxes, 5+C] ────────────────────────────────────
@@ -168,6 +265,65 @@ namespace MedVisionAI.Services
                 new() { ClassId = maxIdx, Confidence = maxVal,
                         X1 = 0, Y1 = 0, X2 = 1, Y2 = 1 }
             };
+        }
+
+        private static DisposableNamedOnnxValue? FindOutput(
+            IEnumerable<DisposableNamedOnnxValue> outputs,
+            params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var match = outputs.FirstOrDefault(o =>
+                    o.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                    return match;
+            }
+
+            return null;
+        }
+
+        private static int GetBoxCount(Tensor<float> boxes)
+        {
+            var dims = boxes.Dimensions.ToArray();
+            if (dims.Length == 2) return dims[0];
+            if (dims.Length == 3) return dims[1];
+            return 0;
+        }
+
+        private static (float X1, float Y1, float X2, float Y2) ReadBox(
+            Tensor<float> boxes, int index)
+        {
+            var dims = boxes.Dimensions.ToArray();
+            if (dims.Length == 2)
+                return (boxes[index, 0], boxes[index, 1], boxes[index, 2], boxes[index, 3]);
+            if (dims.Length == 3)
+                return (boxes[0, index, 0], boxes[0, index, 1], boxes[0, index, 2], boxes[0, index, 3]);
+            return (0, 0, 0, 0);
+        }
+
+        private static float ReadVector(Tensor<float> tensor, int index)
+        {
+            var dims = tensor.Dimensions.ToArray();
+            return dims.Length switch
+            {
+                1 => tensor[index],
+                2 => tensor[0, index],
+                _ => 0f,
+            };
+        }
+
+        private static float[] ToProbabilities(float[] values)
+        {
+            bool alreadyProbabilities =
+                values.All(v => v is >= 0f and <= 1f) &&
+                Math.Abs(values.Sum() - 1f) < 0.05f;
+            if (alreadyProbabilities)
+                return values;
+
+            float max = values.Max();
+            var exp = values.Select(v => MathF.Exp(v - max)).ToArray();
+            float sum = exp.Sum();
+            return sum <= 0 ? values : exp.Select(v => v / sum).ToArray();
         }
 
         // ── NMS ───────────────────────────────────────────────────────────────

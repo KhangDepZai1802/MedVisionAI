@@ -5,6 +5,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
+        Icon="/Assets/Brand/AppIcon.ico"
         ResizeMode="CanResize"
         MinWidth="1200" MinHeight="750"
         WindowStartupLocation="CenterScreen"
@@ -229,11 +230,13 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0"
-                                Background="#F3EEFF" CornerRadius="12"
+                                Background="Transparent" CornerRadius="12"
                                 Width="46" Height="46" Margin="0,0,14,0">
-                            <TextBlock Text="🧬" FontSize="20"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
+                            <Image Source="/Assets/Brand/logoNST.png"
+                                   Width="34" Height="34"
+                                   Stretch="Uniform"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">

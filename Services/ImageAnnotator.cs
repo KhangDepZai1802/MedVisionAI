@@ -174,6 +174,51 @@ namespace MedVisionAI.Services
             }
         }
 
+        public static byte[] AnnotateClassifier(
+            string imagePath,
+            string moduleTitle,
+            string label,
+            float confidence,
+            bool isNormal,
+            MedicalClassifierKind kind)
+        {
+            string workPath = imagePath;
+            string? tempPath = null;
+
+            if (imagePath.Any(c => c > 127))
+            {
+                tempPath = Path.Combine(
+                    Path.GetTempPath(),
+                    $"mv_{Guid.NewGuid():N}.png");
+                File.Copy(imagePath, tempPath, overwrite: true);
+                workPath = tempPath;
+            }
+
+            try
+            {
+                using var img = Cv2.ImRead(workPath, ImreadModes.Color);
+                if (img.Empty())
+                    throw new Exception($"Cannot read image: {imagePath}");
+
+                var accent = kind == MedicalClassifierKind.BloodCancer
+                    ? new Scalar(50, 50, 220)
+                    : new Scalar(75, 170, 35);
+                var okColor = new Scalar(60, 210, 80);
+                var resultColor = isNormal ? okColor : accent;
+
+                DrawFocusFrame(img, resultColor);
+                DrawClassifierOverlay(img, moduleTitle, label, confidence, isNormal, resultColor);
+
+                Cv2.ImEncode(".png", img, out var bytes);
+                return bytes;
+            }
+            finally
+            {
+                if (tempPath != null && File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+        }
+
         // ── Overlay panel — ALL text MUST be pure ASCII ───────────────────────
         private static void DrawOverlay(Mat img, ChromosomeAnalysisInfo info)
         {
@@ -277,6 +322,79 @@ namespace MedVisionAI.Services
                 riskColor, 1);
         }
 
+        private static void DrawFocusFrame(Mat img, Scalar color)
+        {
+            int w = img.Cols, h = img.Rows;
+            int fw = Math.Max(80, (int)(w * 0.62));
+            int fh = Math.Max(80, (int)(h * 0.62));
+            int x1 = (w - fw) / 2;
+            int y1 = (h - fh) / 2;
+            int x2 = x1 + fw;
+            int y2 = y1 + fh;
+            int len = Math.Max(18, Math.Min(w, h) / 11);
+
+            using var ov = img.Clone();
+            Cv2.Rectangle(ov, new CvRect(0, 0, w, h), new Scalar(15, 15, 15), -1);
+            Cv2.Rectangle(ov, new CvRect(x1, y1, fw, fh), new Scalar(0, 0, 0), -1);
+            Cv2.AddWeighted(ov, 0.20, img, 0.80, 0, img);
+
+            int thickness = Math.Max(2, Math.Min(w, h) / 180);
+            Cv2.Line(img, new CvPoint(x1, y1), new CvPoint(x1 + len, y1), color, thickness);
+            Cv2.Line(img, new CvPoint(x1, y1), new CvPoint(x1, y1 + len), color, thickness);
+            Cv2.Line(img, new CvPoint(x2, y1), new CvPoint(x2 - len, y1), color, thickness);
+            Cv2.Line(img, new CvPoint(x2, y1), new CvPoint(x2, y1 + len), color, thickness);
+            Cv2.Line(img, new CvPoint(x1, y2), new CvPoint(x1 + len, y2), color, thickness);
+            Cv2.Line(img, new CvPoint(x1, y2), new CvPoint(x1, y2 - len), color, thickness);
+            Cv2.Line(img, new CvPoint(x2, y2), new CvPoint(x2 - len, y2), color, thickness);
+            Cv2.Line(img, new CvPoint(x2, y2), new CvPoint(x2, y2 - len), color, thickness);
+
+            int cx = w / 2, cy = h / 2;
+            Cv2.Line(img, new CvPoint(cx - len / 2, cy), new CvPoint(cx + len / 2, cy), color, 1);
+            Cv2.Line(img, new CvPoint(cx, cy - len / 2), new CvPoint(cx, cy + len / 2), color, 1);
+            Cv2.Circle(img, new CvPoint(cx, cy), Math.Max(8, len / 4), color, 1);
+        }
+
+        private static void DrawClassifierOverlay(
+            Mat img,
+            string moduleTitle,
+            string label,
+            float confidence,
+            bool isNormal,
+            Scalar color)
+        {
+            using var ov = img.Clone();
+            Cv2.Rectangle(ov, new CvRect(8, 8, 360, 118),
+                new Scalar(15, 15, 15), -1);
+            Cv2.AddWeighted(ov, 0.58, img, 0.42, 0, img);
+
+            var white = new Scalar(255, 255, 255);
+            var green = new Scalar(60, 210, 80);
+            var resultColor = isNormal ? green : color;
+
+            int x = 16, y = 30, lh = 24;
+            Cv2.PutText(img, "AI focus classification",
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.50,
+                white, 1);
+            y += lh;
+
+            string shortModule = moduleTitle.Contains("máu", StringComparison.OrdinalIgnoreCase)
+                ? "Blood cell cancer"
+                : "Malaria parasite";
+            Cv2.PutText(img, shortModule,
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.43,
+                white, 1);
+            y += lh;
+
+            Cv2.PutText(img, $"Result: {ToAsciiLabel(label)}",
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.43,
+                resultColor, 1);
+            y += lh;
+
+            Cv2.PutText(img, $"Confidence: {confidence:P0}",
+                new CvPoint(x, y), HersheyFonts.HersheySimplex, 0.43,
+                resultColor, 1);
+        }
+
         private static string ShortLabel(string label)
         {
             if (label.Contains("Trisomy 21")) return "Down";
@@ -296,6 +414,23 @@ namespace MedVisionAI.Services
                 risk.Contains("doi", StringComparison.OrdinalIgnoreCase))
                 return "Monitor";
             return "Normal";
+        }
+
+        private static string ToAsciiLabel(string label)
+        {
+            if (label.Contains("ký sinh", StringComparison.OrdinalIgnoreCase))
+                return "Parasitized";
+            if (label.Contains("Không", StringComparison.OrdinalIgnoreCase))
+                return "Uninfected";
+            if (label.Contains("lành", StringComparison.OrdinalIgnoreCase))
+                return "Benign";
+            return label
+                .Replace("á", "a")
+                .Replace("Á", "A")
+                .Replace("ế", "e")
+                .Replace("ề", "e")
+                .Replace("ễ", "e")
+                .Replace("ệ", "e");
         }
     }
 }
